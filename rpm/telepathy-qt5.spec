@@ -94,7 +94,7 @@ This package contains automated tests and tests.xml
 
 
 %prep
-%setup -q -n %{name}-%{version}/telepathy-qt4
+%setup -q -n %{name}-%{version}/telepathy-qt
 
 # nemo-tests-install.patch
 %patch0 -p1

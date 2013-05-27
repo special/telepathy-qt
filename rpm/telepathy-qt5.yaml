@@ -34,7 +34,7 @@ PkgBR:
     - dbus-python
     - doxygen
     - cmake
-SetupOptions: -q -n %{name}-%{version}/telepathy-qt4
+SetupOptions: -q -n %{name}-%{version}/telepathy-qt
 Configure: none
 SubPackages:
     - Name: devel
