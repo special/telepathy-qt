@@ -12,12 +12,17 @@ diff -Naur telepathy-qt-0.9.3/cmake/modules/TpQtMacros.cmake telepathy-qt-0.9.3-
 diff -Naur telepathy-qt-0.9.3/tests/CMakeLists.txt telepathy-qt-0.9.3-tests-install/tests/CMakeLists.txt
 --- telepathy-qt-0.9.3/tests/CMakeLists.txt	2012-07-13 17:40:23.000000000 +0000
 +++ telepathy-qt-0.9.3-tests-install/tests/CMakeLists.txt	2013-04-12 20:34:51.013462217 +0000
-@@ -42,6 +42,24 @@
+@@ -42,6 +42,28 @@
  tpqt_add_generic_unit_test(RCCSpec rccspec)
  tpqt_add_generic_unit_test(FileTransferChannelCreationProperties file-transfer-channel-creation-properties)
  
 +# Add Nemo install targets
-+set(NEMO_TESTS_DIR "/opt/tests/telepathy-qt${QT_VERSION_MAJOR}")
++if (NOT "${Qt5Core_VERSION_MAJOR}" STREQUAL "")
++    set(NEMO_TESTS_DIR "/opt/tests/telepathy-qt${Qt5Core_VERSION_MAJOR}")
++else()
++    set(NEMO_TESTS_DIR "/opt/tests/telepathy-qt${QT_VERSION_MAJOR}")
++endif()
++
 +set(NEMO_TESTS_DIR_BIN "${NEMO_TESTS_DIR}/bin")
 +set(NEMO_TESTS_DIR_LIB "${NEMO_TESTS_DIR}/lib")
 +set(NEMO_TESTS_DIR_DATA "${NEMO_TESTS_DIR}/data")
