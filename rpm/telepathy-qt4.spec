@@ -19,6 +19,7 @@ Source1:    INSIGNIFICANT
 Source2:    mktests.sh.in
 Source3:    runDbusTest.sh.in
 Source4:    runTest.sh.in
+Source5:    telepathy-qt5.patch
 Source100:  telepathy-qt4.yaml
 Patch0:     nemo-tests-install.patch
 Requires(post): /sbin/ldconfig

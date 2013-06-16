@@ -11,6 +11,9 @@ Sources:
     - mktests.sh.in
     - runDbusTest.sh.in
     - runTest.sh.in
+    # This doesn't really belong here, but as this package has dual packaging we
+    # keep boss happy by having this patch here as source.
+    - telepathy-qt5.patch
 Patches:
     - nemo-tests-install.patch
 Description: |
