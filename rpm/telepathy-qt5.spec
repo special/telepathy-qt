@@ -101,6 +101,10 @@ This package contains automated tests and tests.xml
 # telepathy-qt5.patch
 %patch1 -p1
 # >> setup
+# << setup
+
+%build
+# >> build pre
 %__cp $RPM_SOURCE_DIR/INSIGNIFICANT tests/
 %__cp $RPM_SOURCE_DIR/mktests.sh.in tests/
 %__cp $RPM_SOURCE_DIR/runDbusTest.sh.in tests/
@@ -109,16 +113,13 @@ This package contains automated tests and tests.xml
 %__chmod 0755 tests/mktests.sh.in
 %__chmod 0755 tests/runDbusTest.sh.in
 %__chmod 0755 tests/runTest.sh.in
-# << setup
 
-%build
-# >> build pre
 export QT_SELECT=5
 %cmake -DENABLE_TESTS=TRUE -DENABLE_FARSIGHT=FALSE -DENABLE_FARSTREAM=TRUE -DENABLE_EXAMPLES=FALSE
 # << build pre
 
 
-make %{?jobs:-j%jobs}
+make %{_smp_mflags}
 
 # >> build post
 tests/mktests.sh > tests/tests.xml
