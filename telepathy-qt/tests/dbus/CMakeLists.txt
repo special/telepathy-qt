@@ -14,19 +14,19 @@ if(ENABLE_TP_GLIB_TESTS)
 
     add_definitions(-DQT_NO_KEYWORDS)
 
-    if (${QT_VERSION_MAJOR} EQUAL 4)
-        if (NOT ${QT_VERSION_MINOR} EQUAL 6)
+    if (${Qt5Core_VERSION_MAJOR} EQUAL 4)
+        if (NOT ${Qt5Core_VERSION_MINOR} EQUAL 6)
             # >= qt 4.7
             # FIXME - Re-enable racy tests once https://bugs.freedesktop.org/show_bug.cgi?id=43356 is
             #         fixed
             SET(ENABLE_TESTS_WITH_RACES_IN_QT_4_6 TRUE)
             SET(ENABLE_TESTS_WITH_ISSUES_IN_QT_5 TRUE)
-        endif (NOT ${QT_VERSION_MINOR} EQUAL 6)
-    else (${QT_VERSION_MAJOR} EQUAL 4)
+        endif (NOT ${Qt5Core_VERSION_MINOR} EQUAL 6)
+    else (${Qt5Core_VERSION_MAJOR} EQUAL 4)
         # Currently none - this variable is here in case some issues arise
         SET(ENABLE_TESTS_WITH_ISSUES_IN_QT_5 FALSE)
         SET(ENABLE_TESTS_WITH_RACES_IN_QT_4_6 TRUE)
-    endif (${QT_VERSION_MAJOR} EQUAL 4)
+    endif (${Qt5Core_VERSION_MAJOR} EQUAL 4)
 
     if(HAVE_TEST_PYTHON)
         tpqt_add_dbus_unit_test(AccountBasics account-basics tp-glib-tests tp-qt-tests-glib-helpers)
@@ -78,10 +78,10 @@ if(ENABLE_TP_GLIB_TESTS)
         endif(ENABLE_TP_GLIB_GIO_TESTS)
     endif (ENABLE_TESTS_WITH_RACES_IN_QT_4_6)
 
-    if(NOT (${QT_VERSION_MAJOR} EQUAL 4 AND ${QT_VERSION_MINOR} LESS 8))
+    if(NOT (${Qt5Core_VERSION_MAJOR} EQUAL 4 AND ${Qt5Core_VERSION_MINOR} LESS 8))
         message(STATUS "Enabling Qt 4.8+ tests")
         tpqt_add_dbus_unit_test(DBusTubeChannel dbus-tube-chan tp-glib-tests tp-qt-tests-glib-helpers)
-    endif(NOT (${QT_VERSION_MAJOR} EQUAL 4 AND ${QT_VERSION_MINOR} LESS 8))
+    endif(NOT (${Qt5Core_VERSION_MAJOR} EQUAL 4 AND ${Qt5Core_VERSION_MINOR} LESS 8))
 
 
 endif(ENABLE_TP_GLIB_TESTS)
@@ -91,8 +91,8 @@ tpqt_add_dbus_unit_test(ProfileManager profile-manager)
 tpqt_add_dbus_unit_test(Types types)
 
 if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
-    tpqt_add_dbus_unit_test(BaseConnectionManager base-cm telepathy-qt${QT_VERSION_MAJOR}-service)
-    tpqt_add_dbus_unit_test(BaseProtocol base-protocol telepathy-qt${QT_VERSION_MAJOR}-service)
+    tpqt_add_dbus_unit_test(BaseConnectionManager base-cm telepathy-qt${Qt5Core_VERSION_MAJOR}-service)
+    tpqt_add_dbus_unit_test(BaseProtocol base-protocol telepathy-qt${Qt5Core_VERSION_MAJOR}-service)
 endif(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
 
 # Make check target. In case of check, output on failure and put it into a log

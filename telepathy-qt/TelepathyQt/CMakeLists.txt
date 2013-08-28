@@ -742,9 +742,9 @@ endif (TARGET doxygen-doc)
 
 # Create the library
 if (ENABLE_COMPILER_COVERAGE)
-    add_library(telepathy-qt${QT_VERSION_MAJOR} STATIC ${telepathy_qt_SRCS})
+    add_library(telepathy-qt${Qt5Core_VERSION_MAJOR} STATIC ${telepathy_qt_SRCS})
 else (ENABLE_COMPILER_COVERAGE)
-    add_library(telepathy-qt${QT_VERSION_MAJOR} SHARED ${telepathy_qt_SRCS})
+    add_library(telepathy-qt${Qt5Core_VERSION_MAJOR} SHARED ${telepathy_qt_SRCS})
 endif (ENABLE_COMPILER_COVERAGE)
 
 # Library used by tests to test some unexported functionality
@@ -760,58 +760,58 @@ foreach(moc_src ${telepathy_qt_MOC_SRCS})
                                      ${telepathy_qt_generated_specs_mocs})
     list(APPEND telepathy_qt_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
     string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
-    add_dependencies(telepathy-qt${QT_VERSION_MAJOR} "moc-${moc_src}")
+    add_dependencies(telepathy-qt${Qt5Core_VERSION_MAJOR} "moc-${moc_src}")
 endforeach(moc_src ${telepathy_qt_MOC_SRCS})
 
 # Link
-target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}
-    ${QT_QTCORE_LIBRARY}
-    ${QT_QTDBUS_LIBRARY}
-    ${QT_QTNETWORK_LIBRARY}
-    ${QT_QTXML_LIBRARY}
+target_link_libraries(telepathy-qt${Qt5Core_VERSION_MAJOR}
+    ${Qt5Core_LIBRARIES}
+    ${Qt5DBus_LIBRARIES}
+    ${Qt5Network_LIBRARIES}
+    ${Qt5Xml_LIBRARIES}
     ${TP_QT_LIBRARY_LINKER_FLAGS})
 
 # Link - Library used by tests to test some unexported functionality
 target_link_libraries(telepathy-qt-test-backdoors
-    ${QT_QTCORE_LIBRARY}
-    ${QT_QTDBUS_LIBRARY}
-    ${QT_QTNETWORK_LIBRARY}
-    ${QT_QTXML_LIBRARY}
+    ${Qt5Core_LIBRARIES}
+    ${Qt5DBus_LIBRARIES}
+    ${Qt5Network_LIBRARIES}
+    ${Qt5Xml_LIBRARIES}
     ${TP_QT_LIBRARY_LINKER_FLAGS})
 
 if (ENABLE_COMPILER_COVERAGE)
-    target_link_libraries(telepathy-qt${QT_VERSION_MAJOR} gcov)
+    target_link_libraries(telepathy-qt${Qt5Core_VERSION_MAJOR} gcov)
     target_link_libraries(telepathy-qt-test-backdoors gcov)
 endif (ENABLE_COMPILER_COVERAGE)
 
 # Set the correct version number
-set_target_properties(telepathy-qt${QT_VERSION_MAJOR} PROPERTIES
+set_target_properties(telepathy-qt${Qt5Core_VERSION_MAJOR} PROPERTIES
                                     SOVERSION ${TP_QT_ABI_VERSION}
                                     VERSION ${TP_QT_LIBRARY_VERSION})
 
 
 # Install header files
-install(FILES ${telepathy_qt_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt COMPONENT headers)
-install(FILES ${telepathy_qt_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt/_gen COMPONENT headers)
+install(FILES ${telepathy_qt_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${Qt5Core_VERSION_MAJOR}/TelepathyQt COMPONENT headers)
+install(FILES ${telepathy_qt_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${Qt5Core_VERSION_MAJOR}/TelepathyQt/_gen COMPONENT headers)
 
 # Install the library - watch out for the correct components
 if (WIN32)
-    install(TARGETS telepathy-qt${QT_VERSION_MAJOR}
-            EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
+    install(TARGETS telepathy-qt${Qt5Core_VERSION_MAJOR}
+            EXPORT  TelepathyQt${Qt5Core_VERSION_MAJOR}Targets
             RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
             ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
 else (WIN32)
-    install(TARGETS telepathy-qt${QT_VERSION_MAJOR}
-            EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
+    install(TARGETS telepathy-qt${Qt5Core_VERSION_MAJOR}
+            EXPORT  TelepathyQt${Qt5Core_VERSION_MAJOR}Targets
             LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT mainlibrary
             ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT libs)
 endif (WIN32)
 
 # pkg-config files, only if we are not using windows
 if (NOT WIN32)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}-uninstalled.pc)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}.pc)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQt-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}-uninstalled.pc)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
 endif (NOT WIN32)
 
 # CMake Version and config files
@@ -819,29 +819,29 @@ include(MacroWriteBasicCMakeVersionFile)
 
 # all the following variables are put into TelepathyQt*Config.cmake, so
 # they are usable by projects using TelepathyQt.
-make_install_path_absolute(TELEPATHY_QT_INCLUDE_DIR         ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR})
+make_install_path_absolute(TELEPATHY_QT_INCLUDE_DIR         ${INCLUDE_INSTALL_DIR}/telepathy-qt${Qt5Core_VERSION_MAJOR})
 make_install_path_absolute(TELEPATHY_QT_LIB_DIR             ${LIB_INSTALL_DIR})
 make_install_path_absolute(TELEPATHY_QT_DATA_DIR            ${DATA_INSTALL_DIR})
 
 # Configure the actual Config file
-configure_file(TelepathyQtConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Config.cmake" @ONLY)
+configure_file(TelepathyQtConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}Config.cmake" @ONLY)
 
 # this file is used by to check if the installed version can be used.
-macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVersion.cmake
+macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}ConfigVersion.cmake
                                      ${PACKAGE_VERSION})
 
 # Find out the correct installation directory
 if (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
-    set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR})
+    set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${Qt5Core_VERSION_MAJOR})
 else (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
-    set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}/cmake)
+    set(_TelepathyQtConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}/cmake)
 endif (USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
 
-install(EXPORT TelepathyQt${QT_VERSION_MAJOR}Targets
+install(EXPORT TelepathyQt${Qt5Core_VERSION_MAJOR}Targets
         DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
         COMPONENT headers)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ConfigVersion.cmake
-              ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Config.cmake
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}ConfigVersion.cmake
+              ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}Config.cmake
         DESTINATION ${_TelepathyQtConfig_INSTALL_DIR}
         COMPONENT headers)
 
@@ -929,12 +929,12 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
 
     # Create the library
     #if (ENABLE_COMPILER_COVERAGE)
-    #    add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
+    #    add_library(telepathy-qt${Qt5Core_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
     #else (ENABLE_COMPILER_COVERAGE)
-    #    add_library(telepathy-qt${QT_VERSION_MAJOR}-service SHARED ${telepathy_qt_service_SRCS})
+    #    add_library(telepathy-qt${Qt5Core_VERSION_MAJOR}-service SHARED ${telepathy_qt_service_SRCS})
     #endif (ENABLE_COMPILER_COVERAGE)
     # lets build a static only library until we have a stable API/ABI
-    add_library(telepathy-qt${QT_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
+    add_library(telepathy-qt${Qt5Core_VERSION_MAJOR}-service STATIC ${telepathy_qt_service_SRCS})
 
     # generate service moc files
     foreach(moc_src ${telepathy_qt_service_MOC_SRCS})
@@ -945,62 +945,62 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
                                         ${telepathy_qt_service_generated_specs_mocs})
         list(APPEND telepathy_qt_service_SRCS ${CMAKE_CURRENT_BINARY_DIR}/${generated_file})
         string(REPLACE ".h" ".moc.hpp" moc_src ${moc_src})
-        add_dependencies(telepathy-qt${QT_VERSION_MAJOR}-service "moc-${moc_src}")
+        add_dependencies(telepathy-qt${Qt5Core_VERSION_MAJOR}-service "moc-${moc_src}")
     endforeach(moc_src ${telepathy_qt_service_MOC_SRCS})
 
     # Link
-    target_link_libraries(telepathy-qt${QT_VERSION_MAJOR}-service
-        ${QT_QTDBUS_LIBRARY}
-        ${QT_QTCORE_LIBRARY}
-        telepathy-qt${QT_VERSION_MAJOR}
+    target_link_libraries(telepathy-qt${Qt5Core_VERSION_MAJOR}-service
+        ${Qt5DBus_LIBRARIES}
+        ${Qt5Core_LIBRARIES}
+        telepathy-qt${Qt5Core_VERSION_MAJOR}
         ${TP_QT_LIBRARY_LINKER_FLAGS})
 
     # Set the correct version number
-    set_target_properties(telepathy-qt${QT_VERSION_MAJOR}-service PROPERTIES
+    set_target_properties(telepathy-qt${Qt5Core_VERSION_MAJOR}-service PROPERTIES
                                                  SOVERSION ${TP_QT_ABI_VERSION}
                                                  VERSION ${TP_QT_LIBRARY_VERSION})
 
     # Install the library - watch out for the correct components
     if (WIN32)
-        install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-service
-                EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
+        install(TARGETS telepathy-qt${Qt5Core_VERSION_MAJOR}-service
+                EXPORT  TelepathyQt${Qt5Core_VERSION_MAJOR}Targets
                 RUNTIME DESTINATION ${LIB_INSTALL_DIR} COMPONENT service
                 ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT service_libs)
     else (WIN32)
-        install(TARGETS telepathy-qt${QT_VERSION_MAJOR}-service
-                EXPORT  TelepathyQt${QT_VERSION_MAJOR}Targets
+        install(TARGETS telepathy-qt${Qt5Core_VERSION_MAJOR}-service
+                EXPORT  TelepathyQt${Qt5Core_VERSION_MAJOR}Targets
                 LIBRARY DESTINATION ${LIB_INSTALL_DIR} COMPONENT service
                 ARCHIVE DESTINATION ${LIB_INSTALL_DIR} COMPONENT service_libs)
     endif (WIN32)
 
     # Install headers
-    install(FILES ${telepathy_qt_service_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt
+    install(FILES ${telepathy_qt_service_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${Qt5Core_VERSION_MAJOR}/TelepathyQt
             COMPONENT service_headers)
-    install(FILES ${telepathy_qt_service_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${QT_VERSION_MAJOR}/TelepathyQt/_gen
+    install(FILES ${telepathy_qt_service_gen_HEADERS} DESTINATION ${INCLUDE_INSTALL_DIR}/telepathy-qt${Qt5Core_VERSION_MAJOR}/TelepathyQt/_gen
             COMPONENT service_headers)
 
     # pkg-config files, only if not on windows
     if (NOT WIN32)
-        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtService.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service.pc)
-        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtService-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service-uninstalled.pc)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtService.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}Service.pc)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/TelepathyQtService-uninstalled.pc.in ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}Service-uninstalled.pc)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}Service.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig COMPONENT pkgconfig)
     endif (NOT WIN32)
 
     # Configure the actual Config file
-    configure_file(TelepathyQtServiceConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake" @ONLY)
+    configure_file(TelepathyQtServiceConfig.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}ServiceConfig.cmake" @ONLY)
 
     # this file is used by to check if the installed version can be used.
-    macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfigVersion.cmake
+    macro_write_basic_cmake_version_file(${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}ServiceConfigVersion.cmake
                                          ${PACKAGE_VERSION})
 
     if(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
-        set(_TelepathyQtServiceConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${QT_VERSION_MAJOR}Service)
+        set(_TelepathyQtServiceConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/cmake/TelepathyQt${Qt5Core_VERSION_MAJOR}Service)
     else(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
-        set(_TelepathyQtServiceConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${QT_VERSION_MAJOR}Service/cmake)
+        set(_TelepathyQtServiceConfig_INSTALL_DIR ${LIB_INSTALL_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}Service/cmake)
     endif(USE_COMMON_CMAKE_PACKAGE_CONFIG_DIR)
 
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfigVersion.cmake
-                  ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${QT_VERSION_MAJOR}ServiceConfig.cmake
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}ServiceConfigVersion.cmake
+                  ${CMAKE_CURRENT_BINARY_DIR}/TelepathyQt${Qt5Core_VERSION_MAJOR}ServiceConfig.cmake
             DESTINATION ${_TelepathyQtServiceConfig_INSTALL_DIR}
             COMPONENT headers)
 

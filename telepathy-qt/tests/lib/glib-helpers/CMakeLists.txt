@@ -16,9 +16,9 @@ if(ENABLE_TP_GLIB_TESTS)
         ${GOBJECT_LIBRARIES}
         ${GLIB2_LIBRARIES}
         ${DBUS_GLIB_LIBRARIES}
-        ${QT_QTCORE_LIBRARY}
-        ${QT_QTDBUS_LIBRARY}
-        telepathy-qt${QT_VERSION_MAJOR})
+        ${Qt5Core_LIBRARIES}
+        ${Qt5DBus_LIBRARIES}
+        telepathy-qt${Qt5Core_VERSION_MAJOR})
 endif(ENABLE_TP_GLIB_TESTS)
 
 # Add Nemo install target
