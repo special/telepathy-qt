@@ -854,6 +854,8 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     set(telepathy_qt_service_SRCS
         base-connection-manager.cpp
         base-connection.cpp
+        base-channel.cpp
+        base-call.cpp
         base-protocol.cpp
         dbus-error.cpp
         dbus-object.cpp
@@ -869,6 +871,10 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         base-connection-manager.h
         BaseConnection
         base-connection.h
+        BaseChannel
+        base-channel.h
+        BaseCall
+        base-call.h
         BaseProtocol
         BaseProtocolAddressingInterface
         BaseProtocolAvatarsInterface
@@ -886,6 +892,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     # Generated headers which will be installed and exported
     set(telepathy_qt_service_gen_HEADERS
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-channel.h
+        ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-call.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection.h
         ${CMAKE_CURRENT_BINARY_DIR}/_gen/svc-connection-manager.h)
 
@@ -894,6 +901,10 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
         abstract-adaptor.h
         base-connection-manager.h
         base-connection-manager-internal.h
+        base-channel.h
+        base-channel-internal.h
+        base-call.h
+        base-call-internal.h
         base-connection.h
         base-connection-internal.h
         base-protocol.h
@@ -905,6 +916,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
 
     set(SPECS
         svc-channel
+        svc-call
         svc-connection
         svc-connection-manager)
     foreach(spec ${SPECS})
@@ -920,6 +932,7 @@ if(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT)
     endforeach(spec ${SPECS})
 
     tpqt_service_generator(svc-channel servicechannel Channel Tp::Service DEPENDS svc-channel-spec-xincludator)
+    tpqt_service_generator(svc-call servicecall Channel Tp::Service DEPENDS svc-call-spec-xincludator)
     tpqt_service_generator(svc-connection serviceconn Connection Tp::Service DEPENDS svc-connection-spec-xincludator)
     tpqt_service_generator(svc-connection-manager servicecm ConnectionManager Tp::Service DEPENDS svc-connection-manager-spec-xincludator)
 

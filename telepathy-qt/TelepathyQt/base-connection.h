@@ -30,6 +30,7 @@
 #include <TelepathyQt/DBusService>
 #include <TelepathyQt/Global>
 #include <TelepathyQt/Types>
+#include <TelepathyQt/Callbacks>
 
 #include <QDBusConnection>
 
@@ -45,30 +46,26 @@ class TP_QT_EXPORT BaseConnection : public DBusService
 
 public:
     static BaseConnectionPtr create(const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters)
-    {
+                                    const QVariantMap &parameters) {
         return BaseConnectionPtr(new BaseConnection(
-                    QDBusConnection::sessionBus(), cmName, protocolName, parameters));
+                                     QDBusConnection::sessionBus(), cmName, protocolName, parameters));
     }
     template<typename BaseConnectionSubclass>
     static SharedPtr<BaseConnectionSubclass> create(const QString &cmName,
-            const QString &protocolName, const QVariantMap &parameters)
-    {
+            const QString &protocolName, const QVariantMap &parameters) {
         return SharedPtr<BaseConnectionSubclass>(new BaseConnectionSubclass(
                     QDBusConnection::sessionBus(), cmName, protocolName, parameters));
     }
     static BaseConnectionPtr create(const QDBusConnection &dbusConnection,
-            const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters)
-    {
+                                    const QString &cmName, const QString &protocolName,
+                                    const QVariantMap &parameters) {
         return BaseConnectionPtr(new BaseConnection(
-                    dbusConnection, cmName, protocolName, parameters));
+                                     dbusConnection, cmName, protocolName, parameters));
     }
     template<typename BaseConnectionSubclass>
     static SharedPtr<BaseConnectionSubclass> create(const QDBusConnection &dbusConnection,
             const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters)
-    {
+            const QVariantMap &parameters) {
         return SharedPtr<BaseConnectionSubclass>(new BaseConnectionSubclass(
                     dbusConnection, cmName, protocolName, parameters));
     }
@@ -78,8 +75,41 @@ public:
     QString cmName() const;
     QString protocolName() const;
     QVariantMap parameters() const;
-
+    uint status() const;
     QVariantMap immutableProperties() const;
+
+    void setStatus(uint newStatus, uint reason);
+
+    typedef Callback4<BaseChannelPtr, const QString&, uint, uint, DBusError*> CreateChannelCallback;
+    void setCreateChannelCallback(const CreateChannelCallback &cb);
+    Tp::BaseChannelPtr createChannel(const QString &channelType, uint targetHandleType, uint targetHandle, uint initiatorHandle, bool suppressHandler, DBusError *error);
+
+    typedef Callback3<UIntList, uint, const QStringList&, DBusError*> RequestHandlesCallback;
+    void setRequestHandlesCallback(const RequestHandlesCallback &cb);
+    UIntList requestHandles(uint handleType, const QStringList &identifiers, DBusError* error);
+
+    //typedef Callback3<uint, const QString&, const QString&, DBusError*> SetPresenceCallback;
+    //void setSetPresenceCallback(const SetPresenceCallback &cb);
+
+    void setSelfHandle(uint selfHandle);
+    uint selfHandle() const;
+
+    typedef Callback1<void, DBusError*> ConnectCallback;
+    void setConnectCallback(const ConnectCallback &cb);
+
+    typedef Callback3<QStringList, uint, const Tp::UIntList&, DBusError*> InspectHandlesCallback;
+    void setInspectHandlesCallback(const InspectHandlesCallback &cb);
+
+    Tp::ChannelInfoList channelsInfo();
+    Tp::ChannelDetailsList channelsDetails();
+
+    BaseChannelPtr ensureChannel(const QString &channelType, uint targetHandleType,
+                                 uint targetHandle, bool &yours, uint initiatorHandle, bool suppressHandler, DBusError *error);
+    void addChannel(BaseChannelPtr channel);
+
+    QList<AbstractConnectionInterfacePtr> interfaces() const;
+    AbstractConnectionInterfacePtr interface(const QString  &interfaceName) const;
+    bool plugInterface(const AbstractConnectionInterfacePtr &interface);
 
     virtual QString uniqueName() const;
     bool registerObject(DBusError *error = NULL);
@@ -87,13 +117,16 @@ public:
 Q_SIGNALS:
     void disconnected();
 
+private Q_SLOTS:
+    TP_QT_NO_EXPORT void removeChannel();
+
 protected:
     BaseConnection(const QDBusConnection &dbusConnection,
-            const QString &cmName, const QString &protocolName,
-            const QVariantMap &parameters);
+                   const QString &cmName, const QString &protocolName,
+                   const QVariantMap &parameters);
 
     virtual bool registerObject(const QString &busName, const QString &objectPath,
-            DBusError *error);
+                                DBusError *error);
 
 private:
     class Adaptee;
@@ -103,6 +136,229 @@ private:
     Private *mPriv;
 };
 
+class TP_QT_EXPORT AbstractConnectionInterface : public AbstractDBusServiceInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(AbstractConnectionInterface)
+
+public:
+    AbstractConnectionInterface(const QString &interfaceName);
+    virtual ~AbstractConnectionInterface();
+
+private:
+    friend class BaseConnection;
+
+    class Private;
+    friend class Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseConnectionRequestsInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionRequestsInterface)
+
+public:
+    static BaseConnectionRequestsInterfacePtr create(BaseConnection* connection) {
+        return BaseConnectionRequestsInterfacePtr(new BaseConnectionRequestsInterface(connection));
+    }
+    template<typename BaseConnectionRequestsInterfaceSubclass>
+    static SharedPtr<BaseConnectionRequestsInterfaceSubclass> create(BaseConnection* connection) {
+        return SharedPtr<BaseConnectionRequestsInterfaceSubclass>(
+                   new BaseConnectionRequestsInterfaceSubclass(connection));
+    }
+
+    virtual ~BaseConnectionRequestsInterface();
+
+    QVariantMap immutableProperties() const;
+
+    Tp::RequestableChannelClassList requestableChannelClasses;
+    void ensureChannel(const QVariantMap &request, bool &yours,
+                       QDBusObjectPath &channel, QVariantMap &details, DBusError* error);
+    void createChannel(const QVariantMap &request, QDBusObjectPath &channel,
+                       QVariantMap &details, DBusError* error);
+public Q_SLOTS:
+    void newChannels(const Tp::ChannelDetailsList &channels);
+
+protected:
+    BaseConnectionRequestsInterface(BaseConnection* connection);
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+
+class TP_QT_EXPORT BaseConnectionContactsInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionContactsInterface)
+
+
+public:
+    static BaseConnectionContactsInterfacePtr create() {
+        return BaseConnectionContactsInterfacePtr(new BaseConnectionContactsInterface());
+    }
+    template<typename BaseConnectionContactsInterfaceSubclass>
+    static SharedPtr<BaseConnectionContactsInterfaceSubclass> create() {
+        return SharedPtr<BaseConnectionContactsInterfaceSubclass>(
+                   new BaseConnectionContactsInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionContactsInterface();
+
+    QVariantMap immutableProperties() const;
+
+    typedef Callback3<ContactAttributesMap, const Tp::UIntList&, const QStringList&, DBusError*> GetContactAttributesCallback;
+    void setGetContactAttributesCallback(const GetContactAttributesCallback &cb);
+    ContactAttributesMap getContactAttributes(const Tp::UIntList &handles,
+            const QStringList &interfaces,
+            DBusError *error);
+    void setContactAttributeInterfaces(const QStringList &contactAttributeInterfaces);
+protected:
+    BaseConnectionContactsInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseConnectionSimplePresenceInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionSimplePresenceInterface)
+
+public:
+    static BaseConnectionSimplePresenceInterfacePtr create() {
+        return BaseConnectionSimplePresenceInterfacePtr(new BaseConnectionSimplePresenceInterface());
+    }
+    template<typename BaseConnectionSimplePresenceInterfaceSublclass>
+    static SharedPtr<BaseConnectionSimplePresenceInterfaceSublclass> create() {
+        return SharedPtr<BaseConnectionSimplePresenceInterfaceSublclass>(
+                   new BaseConnectionSimplePresenceInterfaceSublclass());
+    }
+
+    virtual ~BaseConnectionSimplePresenceInterface();
+
+    QVariantMap immutableProperties() const;
+
+    typedef Callback3<uint, const QString&, const QString&, DBusError*> SetPresenceCallback;
+    void setSetPresenceCallback(const SetPresenceCallback &cb);
+
+    void setPresences(const Tp::SimpleContactPresences &presences);
+    void setStatuses(const SimpleStatusSpecMap &statuses);
+    void setMaxmimumStatusMessageLength(uint maxmimumStatusMessageLength);
+protected:
+    BaseConnectionSimplePresenceInterface();
+    Tp::SimpleStatusSpecMap statuses() const;
+    int maximumStatusMessageLength() const;
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseConnectionContactListInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionContactListInterface)
+
+public:
+    static BaseConnectionContactListInterfacePtr create() {
+        return BaseConnectionContactListInterfacePtr(new BaseConnectionContactListInterface());
+    }
+    template<typename BaseConnectionContactListInterfaceSubclass>
+    static SharedPtr<BaseConnectionContactListInterfaceSubclass> create() {
+        return SharedPtr<BaseConnectionContactListInterfaceSubclass>(
+                   new BaseConnectionContactListInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionContactListInterface();
+
+    QVariantMap immutableProperties() const;
+
+    void setContactListState(uint contactListState);
+    void setContactListPersists(bool);
+    void setCanChangeContactList(bool);
+    void setRequestUsesMessage(bool);
+    void setDownloadAtConnection(bool);
+
+    typedef Callback3<Tp::ContactAttributesMap, const QStringList&, bool, DBusError*> GetContactListAttributesCallback;
+    void setGetContactListAttributesCallback(const GetContactListAttributesCallback &cb);
+
+    typedef Callback3<void, const Tp::UIntList&, const QString&, DBusError*> RequestSubscriptionCallback;
+    void setRequestSubscriptionCallback(const RequestSubscriptionCallback &cb);
+
+    void contactsChangedWithID(const Tp::ContactSubscriptionMap &changes, const Tp::HandleIdentifierMap &identifiers, const Tp::HandleIdentifierMap &removals);
+protected:
+    BaseConnectionContactListInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
+
+class TP_QT_EXPORT BaseConnectionAddressingInterface : public AbstractConnectionInterface
+{
+    Q_OBJECT
+    Q_DISABLE_COPY(BaseConnectionAddressingInterface)
+
+public:
+    static BaseConnectionAddressingInterfacePtr create() {
+        return BaseConnectionAddressingInterfacePtr(new BaseConnectionAddressingInterface());
+    }
+    template<typename BaseConnectionAddressingInterfaceSubclass>
+    static SharedPtr<BaseConnectionAddressingInterfaceSubclass> create() {
+        return SharedPtr<BaseConnectionAddressingInterfaceSubclass>(
+                   new BaseConnectionAddressingInterfaceSubclass());
+    }
+
+    virtual ~BaseConnectionAddressingInterface();
+
+    QVariantMap immutableProperties() const;
+
+
+
+    typedef Callback6 < void, const QString&, const QStringList&, const QStringList&,
+            Tp::AddressingNormalizationMap&, Tp::ContactAttributesMap&, DBusError* > GetContactsByVCardFieldCallback;
+    void setGetContactsByVCardFieldCallback(const GetContactsByVCardFieldCallback &cb);
+
+    typedef Callback5 < void, const QStringList&, const QStringList&,
+            Tp::AddressingNormalizationMap&, Tp::ContactAttributesMap&, DBusError* > GetContactsByURICallback;
+    void setGetContactsByURICallback(const GetContactsByURICallback &cb);
+
+protected:
+    BaseConnectionAddressingInterface();
+
+private:
+    void createAdaptor();
+
+    class Adaptee;
+    friend class Adaptee;
+    struct Private;
+    friend struct Private;
+    Private *mPriv;
+};
 }
 
 #endif
