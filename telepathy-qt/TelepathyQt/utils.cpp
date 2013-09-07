@@ -204,7 +204,7 @@ QVariant parseValueWithDBusSignature(const QString &value,
         case QVariant::StringList:
             {
                 QStringList list;
-                QByteArray rawValue = value.toLatin1();
+                QByteArray rawValue = value.toAscii();
                 if (KeyFile::unescapeStringList(rawValue, 0, rawValue.size(), list)) {
                     return QVariant(list);
                 } else {
