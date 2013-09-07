@@ -63,7 +63,7 @@ TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel)
     }
 
     TpConnection *gconnection = tp_simple_client_factory_ensure_connection (factory,
-            connection->objectPath().toAscii(), NULL, 0);
+            connection->objectPath().toLatin1(), NULL, 0);
     g_object_unref(factory);
     factory = 0;
     g_object_unref(dbus);
@@ -75,7 +75,7 @@ TfChannel *createFarsightChannel(const StreamedMediaChannelPtr &channel)
     }
 
     TpChannel *gchannel = tp_channel_new(gconnection,
-            channel->objectPath().toAscii(),
+            channel->objectPath().toLatin1(),
             TP_QT_IFACE_CHANNEL_TYPE_STREAMED_MEDIA.latin1(),
             (TpHandleType) channel->targetHandleType(),
             channel->targetHandle(),

@@ -76,13 +76,6 @@ include(MacroLogFeature)
 # external dependencies
 
 # Required dependencies
-# Find qt4 version >= 4.6 or qt5 >= 5.0.0
-set(QT4_MIN_VERSION "4.6.0")
-set(QT4_MAX_VERSION "5.0.0")
-set(QT5_MIN_VERSION "5.0.0")
-set(QT5_MAX_VERSION "6.0.0")
-find_package(Qt REQUIRED)
-
 foreach(flag ${QT_CONFIG_FLAGS})
     if (${flag} MATCHES "reduce_relocations")
         set(TP_QT_EXECUTABLE_LINKER_FLAGS "-fPIE")
@@ -92,11 +85,17 @@ endforeach(flag ${QT_CONFIG_FLAGS})
 
 # This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
 # occurs, and will be used for the SOVERSION of the generated shared libraries.
-if (${QT_VERSION_MAJOR} EQUAL 4)
-    set(TP_QT_ABI_VERSION 2)
-else (${QT_VERSION_MAJOR} EQUAL 4)
-    set(TP_QT_ABI_VERSION 0)
-endif (${QT_VERSION_MAJOR} EQUAL 4)
+# set the Qt version to 5 explicitelly
+set(QT_MIN_VERSION "5.0.0")
+set(QT_MAX_VERSION "6.0.0")
+find_package(Qt5Core REQUIRED)
+find_package(Qt5DBus REQUIRED)
+find_package(Qt5Network REQUIRED)
+find_package(Qt5Xml REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Test REQUIRED)
+
+set(TP_QT_ABI_VERSION 0)
 
 # This variable is used for the library's long version. It is generated dynamically, so don't change its
 # value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
@@ -126,7 +125,12 @@ include(Doxygen)
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_BINARY_DIR}
-                    ${QT_INCLUDES})
+                    ${Qt5Core_INCLUDE_DIRS}
+                    ${Qt5DBus_INCLUDE_DIRS}
+                    ${Qt5Network_INCLUDE_DIRS}
+                    ${Qt5Xml_INCLUDE_DIRS}
+                    ${Qt5Widgets_INCLUDE_DIRS}
+                    ${Qt5Test_INCLUDE_DIRS})
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
 
@@ -137,7 +141,7 @@ endif (ENABLE_DEBUG_OUTPUT)
 
 # Check for Qt Glib support
 include(CheckCXXSourceCompiles)
-set(CMAKE_REQUIRED_INCLUDES ${QT_INCLUDES})
+set(CMAKE_REQUIRED_INCLUDES "${Qt5Core_INCLUDE_DIRS}")
 set(CMAKE_REQUIRED_DEFINITIONS "")
 # set the flags (-fPIE) here so that CHECK_CXX_SOURCE_COMPILES works properly if qt5 was built with
 # -reduce-locations
