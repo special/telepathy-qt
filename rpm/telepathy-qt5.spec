@@ -86,6 +86,7 @@ Group:      Development/Libraries
 Requires:   %{name} = %{version}-%{release}
 Requires:   %{name} = %{version}
 Requires:   dbus-python
+Requires:   pygobject2
 
 %description tests
 This package contains automated tests and tests.xml

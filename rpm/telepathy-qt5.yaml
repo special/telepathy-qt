@@ -74,6 +74,7 @@ SubPackages:
       Requires:
           - "%{name} = %{version}"
           - dbus-python
+          - pygobject2
       Files:
           - /opt/tests/%{name}/*
 
