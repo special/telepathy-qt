@@ -93,9 +93,9 @@ void HandledChannelNotifier::onChannelInvalidated()
     deleteLater();
 }
 
-void HandledChannelNotifier::connectNotify(const char *signalName)
+void HandledChannelNotifier::connectNotify(const QMetaMethod &signal)
 {
-    if (qstrcmp(signalName, SIGNAL(handledAgain(QDateTime,Tp::ChannelRequestHints))) == 0) {
+    if (signal == QMetaMethod::fromSignal(&HandledChannelNotifier::handledAgain)) {
         mPriv->handler->setQueueChannelReceived(false);
     }
 }
