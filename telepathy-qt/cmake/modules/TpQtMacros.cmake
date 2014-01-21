@@ -178,7 +178,7 @@ ENDFUNCTION (TPQT_CREATE_MOC_COMMAND_TARGET_DEPS)
 function(TPQT_GENERATE_MOC_I infile outfile)
     qt5_get_moc_flags(moc_flags)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
-    qt5_create_moc_command(${abs_infile} ${outfile} "${moc_flags}" "-i")
+    qt5_create_moc_command(${abs_infile} ${outfile} "${moc_flags}" "-i" "")
     set_source_files_properties(${outfile} PROPERTIES SKIP_AUTOMOC TRUE)  # dont run automoc on this file
 endfunction(TPQT_GENERATE_MOC_I)
 
