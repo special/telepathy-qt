@@ -40,7 +40,7 @@ endif(POLICY CMP0011)
 #   set nano_version to 1
 set(TP_QT_MAJOR_VERSION 0)
 set(TP_QT_MINOR_VERSION 9)
-set(TP_QT_MICRO_VERSION 3)
+set(TP_QT_MICRO_VERSION 4)
 set(TP_QT_NANO_VERSION  0)
 
 set(PACKAGE_NAME telepathy-qt)
@@ -76,6 +76,18 @@ include(MacroLogFeature)
 # external dependencies
 
 # Required dependencies
+# Find qt4 version >= 4.6 or qt5 >= 5.0.0
+set(QT4_MIN_VERSION "4.6.0")
+set(QT4_MAX_VERSION "5.0.0")
+set(QT5_MIN_VERSION "5.0.0")
+set(QT5_MAX_VERSION "6.0.0")
+find_package(Qt REQUIRED)
+
+IF(QT_VERSION_MAJOR MATCHES 5)
+    # It is QtCore for Qt4 but Qt5Core for Qt5 in pkg-config
+    SET(QT_VERSION_PC 5)
+ENDIF(QT_VERSION_MAJOR MATCHES 5)
+
 foreach(flag ${QT_CONFIG_FLAGS})
     if (${flag} MATCHES "reduce_relocations")
         set(TP_QT_EXECUTABLE_LINKER_FLAGS "-fPIE")
@@ -85,17 +97,11 @@ endforeach(flag ${QT_CONFIG_FLAGS})
 
 # This value contains the library's SOVERSION. This value is to be increased everytime an API/ABI break
 # occurs, and will be used for the SOVERSION of the generated shared libraries.
-# set the Qt version to 5 explicitelly
-set(QT_MIN_VERSION "5.0.0")
-set(QT_MAX_VERSION "6.0.0")
-find_package(Qt5Core REQUIRED)
-find_package(Qt5DBus REQUIRED)
-find_package(Qt5Network REQUIRED)
-find_package(Qt5Xml REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Test REQUIRED)
-
-set(TP_QT_ABI_VERSION 0)
+if (${QT_VERSION_MAJOR} EQUAL 4)
+    set(TP_QT_ABI_VERSION 2)
+else (${QT_VERSION_MAJOR} EQUAL 4)
+    set(TP_QT_ABI_VERSION 0)
+endif (${QT_VERSION_MAJOR} EQUAL 4)
 
 # This variable is used for the library's long version. It is generated dynamically, so don't change its
 # value! Change TP_QT_ABI_VERSION and TP_QT_*_VERSION instead.
@@ -109,8 +115,6 @@ endif (${TP_QT_NANO_VERSION} EQUAL 0)
 option(ENABLE_EXPERIMENTAL_SERVICE_SUPPORT "Enable compilation of experimental and unstable service side bindings for Telepathy-Qt" FALSE)
 # Add an option for compiling examples
 option(ENABLE_EXAMPLES "Enable compilation of examples for Telepathy-Qt" TRUE)
-# Add an option for compiling Farsight (disabled by default)
-option(ENABLE_FARSIGHT "Enable compilation of Farsight bindings (deprecated)" FALSE)
 # Add an option for compiling Farstream
 option(ENABLE_FARSTREAM "Enable compilation of Farstream bindings" TRUE)
 # Add an option for building tests
@@ -125,16 +129,9 @@ include(Doxygen)
 
 include_directories(${CMAKE_SOURCE_DIR}
                     ${CMAKE_BINARY_DIR}
-                    ${Qt5Core_INCLUDE_DIRS}
-                    ${Qt5DBus_INCLUDE_DIRS}
-                    ${Qt5Network_INCLUDE_DIRS}
-                    ${Qt5Xml_INCLUDE_DIRS}
-                    ${Qt5Widgets_INCLUDE_DIRS}
-                    ${Qt5Test_INCLUDE_DIRS})
+                    ${QT_INCLUDES})
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 set(ENABLE_DEBUG_OUTPUT ON CACHE BOOL "If activated, compiles support for printing debug output to stderr")
 if (ENABLE_DEBUG_OUTPUT)
@@ -143,7 +140,7 @@ endif (ENABLE_DEBUG_OUTPUT)
 
 # Check for Qt Glib support
 include(CheckCXXSourceCompiles)
-set(CMAKE_REQUIRED_INCLUDES "${Qt5Core_INCLUDE_DIRS}")
+set(CMAKE_REQUIRED_INCLUDES ${QT_INCLUDES})
 set(CMAKE_REQUIRED_DEFINITIONS "")
 # set the flags (-fPIE) here so that CHECK_CXX_SOURCE_COMPILES works properly if qt5 was built with
 # -reduce-locations
@@ -189,9 +186,9 @@ macro_log_feature(HAVE_TEST_PYTHON "dbus-python"
                   "http://www.python.org/" FALSE ""
                   "Needed to build some additional unit tests")
 
-if(ENABLE_TESTS OR ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
+if(ENABLE_TESTS OR ENABLE_FARSTREAM)
     # Find telepathy-glib
-    set(TELEPATHY_GLIB_MIN_VERSION 0.17.5)
+    set(TELEPATHY_GLIB_MIN_VERSION 0.18.0)
     find_package(TelepathyGlib)
     macro_log_feature(TELEPATHYGLIB_FOUND "Telepathy-glib"
                       "Glib bindings for Telepathy"
@@ -209,16 +206,6 @@ if(ENABLE_TESTS OR ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
     find_package(DBus)
     find_package(DBusGLib)
     find_package(LibXml2)
-endif()
-
-if(ENABLE_FARSIGHT)
-    # Find tp-farsight
-    set(TELEPATHY_FARSIGHT_MIN_VERSION "0.0.4")
-    find_package(TelepathyFarsight)
-    macro_log_feature(TELEPATHYFARSIGHT_FOUND "Telepathy-Farsight"
-                      "A Framework for dealing with audio/video conferencing protocols"
-                      "http://farsight.freedesktop.org/wiki/" FALSE "${TELEPATHY_FARSIGHT_MIN_VERSION}"
-                      "Needed, together with GStreamer, to build telepathy-qt-farsight and some additional examples")
 endif()
 
 if(ENABLE_FARSTREAM)
@@ -239,21 +226,14 @@ if(ENABLE_FARSTREAM)
                       "Needed, together with GStreamer and Farstream, to build telepathy-qt-farstream")
 endif()
 
-if(ENABLE_FARSTREAM OR ENABLE_FARSIGHT)
+if(ENABLE_FARSTREAM)
     # Find GStreamer
     find_package(GStreamer)
     macro_log_feature(GSTREAMER_FOUND "GStreamer"
                       "An open source multimedia framework"
-                      "Needed, together with Tp-Farsight, to build telepathy-qt-farsight and some additional examples"
+                      "Needed, together with Tp-Farstream, to build telepathy-qt-farstream and some additional examples"
                       "http://www.gstreamer.net/" FALSE)
 endif()
-
-# Build TelepathyQt-Farsight only if GStreamer, TelepathyFarsight and all of their dependencies were found
-if (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
-    set (FARSIGHT_COMPONENTS_FOUND 1)
-else (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
-    set (FARSIGHT_COMPONENTS_FOUND 0)
-endif (TELEPATHYFARSIGHT_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSIGHT)
 
 # Build TelepathyQt-Farstream only if GStreamer, TelepathyFarstream and all of their dependencies were found
 if (TELEPATHYFARSTREAM_FOUND AND FARSTREAM_FOUND AND GSTREAMER_FOUND AND GLIB2_FOUND AND GOBJECT_FOUND AND DBUS_FOUND AND LIBXML2_FOUND AND TELEPATHYGLIB_FOUND AND ENABLE_FARSTREAM)
