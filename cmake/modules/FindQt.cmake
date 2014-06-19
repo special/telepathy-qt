@@ -7,22 +7,33 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
-IF(NOT QT_QMAKE_EXECUTABLE)
-  FIND_PROGRAM(QT_QMAKE_EXECUTABLE_FINDQT NAMES qmake qmake4 qmake-qt4 qmake5 qmake-qt5
-               PATHS "${QT_SEARCH_PATH}/bin" "$ENV{QTDIR}/bin")
-  SET(QT_QMAKE_EXECUTABLE ${QT_QMAKE_EXECUTABLE_FINDQT} CACHE PATH "Qt qmake program.")
-ENDIF(NOT QT_QMAKE_EXECUTABLE)
+IF(DESIRED_QT_VERSION MATCHES 5)
+    # Qt5 was explicitly requested, so use its CMakeConfig instead of qmake which may not be at a global location
+    find_package(Qt5Core QUIET)
+    IF( Qt5Core_DIR )
+        SET(QT5_INSTALLED TRUE)
+    ENDIF( Qt5Core_DIR )
+ENDIF(DESIRED_QT_VERSION MATCHES 5)
 
-# now find qmake
-IF(QT_QMAKE_EXECUTABLE)
-  EXEC_PROGRAM(${QT_QMAKE_EXECUTABLE} ARGS "-query QT_VERSION" OUTPUT_VARIABLE QTVERSION)
-  IF(QTVERSION MATCHES "4.*")
-    SET(QT4_INSTALLED TRUE)
-  ENDIF(QTVERSION MATCHES "4.*")
-  IF(QTVERSION MATCHES "5.*")
-    SET(QT5_INSTALLED TRUE)
-  ENDIF(QTVERSION MATCHES "5.*")
-ENDIF(QT_QMAKE_EXECUTABLE)
+#Otherwise search for installed qmakes
+IF(NOT QT5_INSTALLED)
+    IF(NOT QT_QMAKE_EXECUTABLE)
+        FIND_PROGRAM(QT_QMAKE_EXECUTABLE_FINDQT NAMES qmake qmake4 qmake-qt4 qmake5 qmake-qt5
+            PATHS "${QT_SEARCH_PATH}/bin" "$ENV{QTDIR}/bin")
+        SET(QT_QMAKE_EXECUTABLE ${QT_QMAKE_EXECUTABLE_FINDQT} CACHE PATH "Qt qmake program.")
+    ENDIF(NOT QT_QMAKE_EXECUTABLE)
+
+    # now find qmake
+    IF(QT_QMAKE_EXECUTABLE)
+        EXEC_PROGRAM(${QT_QMAKE_EXECUTABLE} ARGS "-query QT_VERSION" OUTPUT_VARIABLE QTVERSION)
+        IF(QTVERSION MATCHES "4.*")
+            SET(QT4_INSTALLED TRUE)
+        ENDIF(QTVERSION MATCHES "4.*")
+        IF(QTVERSION MATCHES "5.*")
+            SET(QT5_INSTALLED TRUE)
+        ENDIF(QTVERSION MATCHES "5.*")
+    ENDIF(QT_QMAKE_EXECUTABLE)
+ENDIF(NOT QT5_INSTALLED)
 
 IF(NOT DESIRED_QT_VERSION)
   IF(QT4_INSTALLED)
@@ -74,10 +85,18 @@ ENDMACRO(QT_GET_MOC_FLAGS)
 
 MACRO(QT_CREATE_MOC_COMMAND infile outfile moc_flags moc_options)
   IF(QT_VERSION_MAJOR MATCHES 4)
-    QT4_CREATE_MOC_COMMAND(${infile} ${outfile} "${moc_flags}" "${moc_options}")
+    IF(CMAKE_VERSION VERSION_GREATER 2.8.11.20130607)
+      QT4_CREATE_MOC_COMMAND(${infile} ${outfile} "${moc_flags}" "${moc_options}" "")
+    ELSE(CMAKE_VERSION VERSION_GREATER 2.8.11.20130607)
+      QT4_CREATE_MOC_COMMAND(${infile} ${outfile} "${moc_flags}" "${moc_options}")
+    ENDIF(CMAKE_VERSION VERSION_GREATER 2.8.11.20130607)
   ELSE(QT_VERSION_MAJOR MATCHES 4)
     IF(QT_VERSION_MAJOR MATCHES 5)
-      QT5_CREATE_MOC_COMMAND(${infile} ${outfile} "${moc_flags}" "${moc_options}")
+      IF(QTVERSION VERSION_GREATER 5.1.99)
+        QT5_CREATE_MOC_COMMAND(${infile} ${outfile} "${moc_flags}" "${moc_options}" "")
+      ELSE()
+        QT5_CREATE_MOC_COMMAND(${infile} ${outfile} "${moc_flags}" "${moc_options}")
+      ENDIF()
     ENDIF(QT_VERSION_MAJOR MATCHES 5)
   ENDIF(QT_VERSION_MAJOR MATCHES 4)
 ENDMACRO(QT_CREATE_MOC_COMMAND)
