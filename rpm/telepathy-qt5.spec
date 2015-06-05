@@ -9,7 +9,7 @@ Name:       telepathy-qt5
 # << macros
 
 Summary:    Qt 5 Telepathy library
-Version:    0.9.3
+Version:    0.9.6.1
 Release:    1
 Group:      System/Libraries
 License:    GPLv2
